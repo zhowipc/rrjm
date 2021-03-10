@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="wolf.night.service.mapper.SysMenuMapper">
+    <resultMap id="BaseResultMap" type="sysmenu">
+        <id column="id" property="id"/>
+        <result column="path" property="path" />
+        <result column="url" property="url" />
+        <result column="name" property="name" />
+        <result column="parent_id" property="parentId" />
+        <result column="order_num" property="orderNum" />
+        <result column="component" property="component" />
+        <result column="menu_type" property="menuType" />
+        <result column="enable" property="enable" />
+        <result column="perms" property="perms" />
+        <result column="icon" property="icon" />
+        <result column="remark" property="remark" />
+        <result column="gmt_create" property="gmtCreate" />
+        <result column="gmt_update" property="gmtUpdate" />
+    </resultMap>
+    <resultMap id="MenusWithRole" type="sysmenu" extends="BaseResultMap">
+        <collection property="roles" ofType="sysRole">
+            <id column="rid" property="id" />
+            <result column="rname" property="name" />
+            <result column="rkey" property="roleKey" />
+        </collection>
+    </resultMap>
+    <resultMap id="Menus" type="sysmenu" extends="BaseResultMap">
+        <collection property="children" ofType="sysmenu">
+            <id column="id2" property="id" />
+            <result column="name2" property="name" />
+            <result column="parentId2" property="parentId" />
+            <result column="orderNum2" property="orderNum" />
+            <result column="path2" property="path" />
+            <result column="url2" property="url" />
+            <result column="component2" property="component" />
+            <result column="menuType2" property="menuType" />
+            <result column="enable2" property="enable" />
+            <result column="perms2" property="perms" />
+            <result column="icon2" property="icon" />
+            <result column="remark2" property="remark" />
+            <result column="gmtCreate2" property="gmtCreate" />
+            <result column="gmtUpdate2" property="gmtUpdate" />
+        </collection>
+    </resultMap>
+    <select id="getMenusWithRole" resultMap="MenusWithRole">
+        SELECT
+            m.*,
+            r.id AS rid,
+            r.NAME AS rname,
+            r.role_key AS rkey
+        FROM
+            sys_role r,
+            sys_menu m,
+            sys_role_menu mr
+        WHERE
+            m.id = mr.menu_id
+            AND mr.role_id = r.id
+        ORDER BY
+            m.order_num
+    </select>
+    <select id="getMenusByUserId" resultMap="Menus">
+        SELECT DISTINCT
+            m1.*,
+            m2.id AS id2,
+            m2.path AS path2,
+            m2.NAME AS name2,
+            m2.url as url2,
+            m2.parent_id parentId2,
+            m2.order_num orderNum2,
+            m2.component component2,
+            m2.menu_type menuType2,
+            m2.ENABLE enable2,
+            m2.perms perms2,
+            m2.icon icon2,
+            m2.remark remark2,
+            m2.gmt_create gmtCreate2,
+            m2.gmt_update gmtUpdate2
+        FROM
+            sys_menu m1,
+            sys_menu m2,
+            sys_user_role ur,
+            sys_role_menu rm
+        WHERE
+            m1.id = m2.parent_id
+            AND m2.id = rm.menu_id
+            AND rm.role_id = ur.role_id
+            AND ur.user_id = #{id}
+            AND m2.ENABLE = TRUE
+        ORDER BY
+            m2.order_num
+    </select>
+    <select id="getAllPermissionValue" resultType="java.lang.String">
+        SELECT
+            m.permission_value
+        FROM
+            sys_menu m;
+    </select>
+    <select id="getPermissionValueByUserId" resultType="java.lang.String">
+        SELECT DISTINCT
+            m.permission_value
+        FROM
+            sys_user_role ur
+            INNER JOIN sys_role_menu rm ON ur.role_id = ur.role_id
+            INNER JOIN sys_menu m ON m.id = rm.menu_id
+        WHERE
+            ur.user_id = #{id};
+    </select>
+</mapper>

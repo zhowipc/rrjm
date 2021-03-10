@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="wolf.night.service.mapper.SysRoleMapper">
+    <resultMap id="BaseResultMap" type="sysrole">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="role_key" property="roleKey"/>
+        <result column="enable" property="enable"/>
+        <result column="order_num" property="orderNum"/>
+        <result column="gmt_create" property="gmtCreate"/>
+        <result column="gmt_update" property="gmtUpdate"/>
+
+    </resultMap>
+    <select id="getRolesByUserId" resultMap="BaseResultMap">
+        SELECT
+            r.id,
+            r.role_key,
+            r.NAME
+        FROM
+            sys_role AS r
+            LEFT JOIN sys_user_role AS ur ON r.id = ur.role_id
+        WHERE
+            ur.user_id = #{id}
+    </select>
+</mapper>

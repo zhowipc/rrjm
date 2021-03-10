@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="wolf.night.service.mapper.SysUserMapper">
+    <resultMap id="BaseResultMap" type="sysuser">
+        <id column="id" property="id"/>
+        <result column="username" property="username" />
+        <result column="nick_name" property="nickName" />
+        <result column="email" property="email" />
+        <result column="phone" property="phone" />
+        <result column="sex" property="sex" />
+        <result column="avatar" property="avatar" />
+        <result column="password" property="password" />
+        <result column="status" property="status" />
+        <result column="remark" property="remark" />
+        <result column="gmt_create" property="gmtCreate" />
+        <result column="gmt_update" property="gmtUpdate" />
+    </resultMap>
+    <resultMap id="User" type="sysuser" extends="BaseResultMap">
+        <collection property="roles" ofType="sysrole">
+            <id column="rid" property="id" />
+            <result column="rname" property="name" />
+            <result column="rkey" property="roleKey" />
+        </collection>
+    </resultMap>
+    <update id="updateUserInfo">
+        update sys_user
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="nickName!=null" >nick_name = #{nickName},</if>
+            <if test="sex!=null" >sex = #{sex},</if>
+            <if test="email!=null" >email = #{email},</if>
+            <if test="phone!=null" >phone = #{phone},</if>
+            <if test="remark!=null" >remark = #{remark},</if>
+        </trim>
+        where id = #{id}
+    </update>
+    <update id="updatePass">
+        update sys_user set password = #{pass} where id = #{id};
+    </update>
+    <select id="getUserInfoByUsername" resultType="wolf.night.service.entity.SysUser">
+        select * from sys_user where username = #{username}
+    </select>
+    <select id="getRolesByUserId" resultType="wolf.night.service.entity.SysRole">
+        SELECT
+            r.*
+        FROM
+            sys_role r
+            LEFT JOIN sys_user_role ur ON r.id = ur.role_id
+        WHERE
+            ur.user_id = #{id}
+    </select>
+    <select id="getAllUserByCond" resultMap="User">
+        SELECT
+            u.*,
+            r.id rid,
+            r.NAME rname,
+            r.role_key rkey
+        FROM
+            sys_user u
+        LEFT JOIN sys_user_role ur ON u.id = ur.user_id
+        LEFT JOIN sys_role r ON r.id = ur.role_id
+        WHERE
+            u.id != #{id}
+            <if test="uservo.nickName!=null and uservo.nickName!=''">
+                and u.nick_name = #{uservo.nickName}
+            </if>
+            <if test="uservo.address!=null and uservo.address!=''">
+                and u.address = #{uservo.address}
+            </if>
+            <if test="uservo.phone!=null and uservo.phone!=''">
+                and u.phone = #{uservo.phone}
+            </if>
+            <if test="uservo.sex!=null and uservo.sex!=''">
+                and u.sex = #{uservo.sex}
+            </if>
+            <if test="uservo.status!=null and uservo.status!=''">
+                and u.status = #{uservo.status}
+            </if>
+            <if test="uservo.startTime!=null">
+                and u.gmt_create = #{uservo.startTime}
+            </if>
+            <if test="uservo.endTime!=null">
+                and u.gmt_create = #{uservo.endTime}
+            </if>
+    </select>
+</mapper>
